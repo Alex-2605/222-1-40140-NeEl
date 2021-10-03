@@ -1,11 +1,14 @@
-from flask import Flask
+from flask import Flask, jsonify
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}} )
 
 
-@app.route('/')
-def index():
-    return "Running Flask server http://127.0.0.1:5000/"
+@app.route('/api/v1.0/mensaje')
+def mensaje():
+    return "Running Flask server http://127.0.0.1:5000"
 
 if __name__ == "__main__":
     app.run(debug=True)
