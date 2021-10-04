@@ -1,13 +1,18 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
+  <img alt="Vue logo" src="./assets/logouniva.png">
+  <h3>Message form flask server: {{ mensaje }}</h3>
 </template>
 
 <script>
 import axios from 'axios'
 
 export default {
-  name: 'App',
-
+   name: 'App',
+  data () {
+    return {
+      mensaje: 'Mensaje por default'
+    }
+  },
   methods: {
     getMensaje () {
       const path = 'http://localhost:5000/api/v1.0/mensaje'
