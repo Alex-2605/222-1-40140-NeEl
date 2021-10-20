@@ -1,6 +1,6 @@
 <template>
   <img alt="Vue logo" src="./assets/logouniva.png">
-  <h3>Message form flask server: {{ mensaje }}</h3>
+  <h3>Prueba NE: {{ mensaje }}</h3>
 </template>
 
 <script>
