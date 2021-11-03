@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
-
+#from flask_cors import CORS
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:php123@localhost/neel_api'
@@ -34,6 +34,8 @@ students_schema = StudentSchema(many=True)
 def index():
     return "You are running NEEL_API"
 
+
+
 @app.route('/create_student/', methods=['POST'])
 def create_student():
     name = request.json['name']
@@ -53,6 +55,7 @@ def create_student():
 
 @app.route('/students/', methods=['GET'])
 def get_students():
+
     all_students = Student.query.all()
     result = students_schema.dump(all_students)
 
@@ -66,26 +69,26 @@ def get_student(id):
     return student_schema.jsonify(student)
     #return id
 
+#PUT Did not worked, I use GET instead
+@app.route('/update/<id>', methods=['GET']) 
+def update(id):
+    student = Student.query.filter_by(id=id).first()
+    name = request.json['name']
+    career = request.json['career']
+    student.name = name
+    student.career = career 
+
+    database.session.commit()
+    return student_schema.jsonify(student)
 
 #DELETE Did not worked, I use GET instead
 @app.route('/delete/<id>', methods=['GET']) 
-def delete_student(id):
+def delete(id):
     student = Student.query.get(id)
 
     database.session.delete(student)
     database.session.commit()
 
-    return student_schema.jsonify(student)
-
-#PUT Did not worked, I use GET instead
-@app.route('/update/<id>', methods=['GET']) 
-def update(id):
-    student = Student.query.filter_by(id=id).first()
-
-    student.name = "Prueba"
-    student.career = "Mecatronica" 
-
-    database.session.commit()
     return student_schema.jsonify(student)
 
 if __name__ == "__main__":
