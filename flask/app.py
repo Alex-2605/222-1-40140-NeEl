@@ -1,95 +1,109 @@
-#from flask_cors import CORS
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
 
-#from flask_cors import CORS
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}} )
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:php123@localhost/neel_api'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:php123@localhost/p_final_games'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 database = SQLAlchemy(app)
 marshmallow = Marshmallow(app)
 
-class Student(database.Model):
+class Game(database.Model):
     id = database.Column(database.Integer, primary_key=True)
-    name = database.Column(database.String(100), unique=True)
-    career = database.Column(database.String(50))
+    name = database.Column(database.String(50), unique=True)
+    platform = database.Column(database.String(15))
+    genre = database.Column(database.String(25))
+    classification = database.Column(database.String(25))
 
-    def __init__(self, name, career):
+    def __init__(self, name, platform, genre, classification):
         self.name = name
-        self.career = career
+        self.platform = platform
+        self.genre = genre
+        self.classification = classification
 
 database.create_all()
 
-class StudentSchema(marshmallow.Schema):
+class GameSchema(marshmallow.Schema):
     class Meta:
-        fields = ('id', 'name', 'career')
+        fields = ('id', 'name', 'platform', 'genre', 'classification')
 
-student_schema = StudentSchema()
-students_schema = StudentSchema(many=True)
+game_schema = GameSchema()
+games_schema = GameSchema(many=True)
 
 @app.route('/')
 def index():
     return "You are running NEEL_API"
 
-
-
-@app.route('/create_student/', methods=['POST'])
-def create_student():
+@app.route('/api/create_game/', methods=['POST'])
+def create_game():
     name = request.json['name']
-    career = request.json['career']
-    #print(name)
-    #print(career)
+
+    databaseGame = Game.query.filter_by(name=name).first()
+
+    if databaseGame is None:
+        platform = request.json['platform']
+        genre = request.json['genre']
+        classification = request.json['classification']
     
-    new_student = Student(name, career)
-    #print(new_student)
+        new_game = Game(name, platform, genre, classification)
 
-    database.session.add(new_student)
-    database.session.commit()
+        database.session.add(new_game)
+        database.session.commit()
 
-    return student_schema.jsonify(new_student)
+        return game_schema.jsonify(new_game)
     
-    #return "Estudent created 10/26/2021"
+    return "0"  
 
-@app.route('/students/', methods=['GET'])
-def get_students():
-
-    all_students = Student.query.all()
-    result = students_schema.dump(all_students)
+@app.route('/api/games/', methods=['GET'])
+def get_games():
+    all_games = Game.query.all()
+    result = games_schema.dump(all_games)
 
     return jsonify(result)
-    #return "Getting all students"
 
-@app.route('/students/<id>', methods=['GET'])
+@app.route('/api/students/<id>', methods=['GET']) #DEFINIR SI AL FINAL SE USARA EL ENDPOINT
 def get_student(id):
-    student = Student.query.get(id)
+    #student = Student.query.get(id)
 
-    return student_schema.jsonify(student)
+    #return student_schema.jsonify(student)
     #return id
+    return "0"
 
 #PUT Did not worked, I use GET instead
-@app.route('/update/<id>', methods=['GET']) 
-def update(id):
-    student = Student.query.filter_by(id=id).first()
-    name = request.json['name']
-    career = request.json['career']
-    student.name = name
-    student.career = career 
+@app.route('/api/update_game/<name>', methods=['GET', 'PUT']) 
+def update_game(name):
+    game = Game.query.filter_by(name=name).first()
+
+    if game is None:
+        return "0"
+
+    platform = request.json['platform']
+    classification = request.json['classification']
+    genre = request.json['genre']
+
+    game.platform = platform
+    game.classification = classification
+    game.genre = genre 
 
     database.session.commit()
-    return student_schema.jsonify(student)
+    return game_schema.jsonify(game)
 
 #DELETE Did not worked, I use GET instead
-@app.route('/delete/<id>', methods=['GET']) 
-def delete(id):
-    student = Student.query.get(id)
+@app.route('/api/delete_game/<id>', methods=['GET', 'DELETE']) 
+def delete_game(id):
+    game = Game.query.get(id)
 
-    database.session.delete(student)
+    if game is None:
+        return "0"
+
+    database.session.delete(game)
     database.session.commit()
 
-    return student_schema.jsonify(student)
+    return game_schema.jsonify(game)
 
 if __name__ == "__main__":
     app.run(debug=True)
